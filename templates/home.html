@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Watch Tower{% endblock %}
+
+{% block content %}
+<script src="//unpkg.com/globe.gl"></script>
+<script src="//unpkg.com/topojson-client"></script>
+<div id="globe"></div>
+
+<!-- Modal overlay -->
+<div id="modal-overlay" class="fixed inset-0 bg-black/50 hidden z-40" onclick="closeModal()"></div>
+
+<!-- Country modal -->
+<div id="country-modal" class="fixed top-4 right-4 bottom-4 w-96 bg-black border border-gray-700 rounded-2xl z-50 transform translate-x-[calc(100%+1rem)] transition-transform duration-300 overflow-y-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between p-4 border-b border-gray-700">
+        <div class="flex items-center gap-3">
+            <span id="modal-flag" class="text-4xl">🏳️</span>
+            <h2 id="modal-country-name" class="text-xl font-bold text-white">Pays</h2>
+        </div>
+        <button onclick="closeModal()" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
+    </div>
+
+    <!-- Content -->
+    <div class="p-4 space-y-4">
+        <!-- Informations générales -->
+        <section>
+            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Informations générales</h3>
+            <div class="space-y-2 text-gray-300">
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Capitale</span>
+                    <span id="modal-capital">—</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Population</span>
+                    <span id="modal-population">—</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Région</span>
+                    <span id="modal-region">—</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Langue(s)</span>
+                    <span id="modal-languages">—</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Monnaie</span>
+                    <span id="modal-currency">—</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Gouvernement -->
+        <section>
+            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Gouvernement</h3>
+            <div class="space-y-2 text-gray-300">
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Chef d'État</span>
+                    <span id="modal-leader">—</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Régime</span>
+                    <span id="modal-government-type">—</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Indicateurs de risque -->
+        <section>
+            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Indicateurs</h3>
+            <div class="space-y-3">
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-500">Niveau de tension</span>
+                        <span id="modal-tension-level" class="text-yellow-500">—</span>
+                    </div>
+                    <div class="w-full bg-gray-800 rounded-full h-2">
+                        <div id="modal-tension-bar" class="bg-yellow-500 h-2 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-500">Stabilité économique</span>
+                        <span id="modal-stability-level" class="text-green-500">—</span>
+                    </div>
+                    <div class="w-full bg-gray-800 rounded-full h-2">
+                        <div id="modal-stability-bar" class="bg-green-500 h-2 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Actualités récentes -->
+        <section>
+            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Actualités récentes</h3>
+            <div id="modal-news" class="space-y-2">
+                <div class="p-3 bg-gray-900 rounded-lg border border-gray-800">
+                    <p class="text-gray-500 text-sm italic">Aucune actualité disponible</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="modal-loading" class="absolute inset-0 bg-black/80 flex items-center justify-center hidden">
+        <div class="flex flex-col items-center gap-2">
+            <div class="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <span class="text-gray-400 text-sm">Chargement...</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Cache pour éviter les appels API répétés
+    const countryCache = new Map();
+
+    const MODAL_HIDDEN_CLASS = 'translate-x-[calc(100%+1rem)]';
+
+    function openModal(countryData) {
+        document.getElementById('modal-overlay').classList.remove('hidden');
+        document.getElementById('country-modal').classList.remove(MODAL_HIDDEN_CLASS);
+
+        // Afficher le nom du pays immédiatement
+        document.getElementById('modal-country-name').textContent = countryData.name || 'Pays inconnu';
+
+        // TODO: Appel API pour récupérer les détails
+        // showLoading(true);
+        // fetchCountryDetails(countryData.id);
+    }
+
+    function closeModal() {
+        document.getElementById('modal-overlay').classList.add('hidden');
+        document.getElementById('country-modal').classList.add(MODAL_HIDDEN_CLASS);
+    }
+
+    function showLoading(show) {
+        document.getElementById('modal-loading').classList.toggle('hidden', !show);
+    }
+
+    // Fermer avec Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+    });
+
+    // Calcule le centroïde approximatif d'un polygone GeoJSON
+    function getPolygonCenter(geometry) {
+        let coords = [];
+        if (geometry.type === 'Polygon') {
+            coords = geometry.coordinates[0];
+        } else if (geometry.type === 'MultiPolygon') {
+            // Prendre le plus grand polygone
+            let maxLen = 0;
+            geometry.coordinates.forEach(poly => {
+                if (poly[0].length > maxLen) {
+                    maxLen = poly[0].length;
+                    coords = poly[0];
+                }
+            });
+        }
+
+        const sum = coords.reduce((acc, coord) => {
+            return { lng: acc.lng + coord[0], lat: acc.lat + coord[1] };
+        }, { lng: 0, lat: 0 });
+
+        return {
+            lat: sum.lat / coords.length,
+            lng: sum.lng / coords.length
+        };
+    }
+
+    const nordstream2 = {
+        type: 'Feature',
+        properties: { name: 'Nord Stream 2' },
+        geometry: {
+            type: 'LineString',
+            coordinates: [
+                [28.75, 59.33],   // Vyborg
+                [26.5, 59.5],     // Golfe de Finlande
+                [24.0, 59.2],
+                [20.5, 58.5],     // Mer Baltique
+                [17.0, 55.5],
+                [14.5, 54.5],
+                [13.66, 54.14]    // Lubmin
+            ]
+        }
+    };
+
+    // Globe
+    let globe;
+    fetch('https://unpkg.com/world-atlas@2/countries-110m.json')
+        .then(res => res.json())
+        .then(topology => {
+            const countries = topojson.feature(topology, topology.objects.countries);
+            globe = Globe()
+                .pathsData([nordstream2])
+                .pathPoints(d => d.geometry.coordinates)
+                .pathPointLat(p => p[1])
+                .pathPointLng(p => p[0])
+                .pathColor(() => '#ff9900')
+                .pathStroke(4)
+                .pathDashLength(0.5)
+                .pathDashGap(0.1)
+                .pathDashAnimateTime(2000)
+                .pathLabel(d => d.properties.name)
+                .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
+                .showAtmosphere(false)
+                .backgroundColor('#000000')
+                .polygonsData(countries.features)
+                .polygonCapColor(() => 'rgba(60, 60, 60, 0.6)')
+                .polygonSideColor(() => 'rgba(60, 60, 60, 0.1)')
+                .polygonStrokeColor(() => 'rgb(255,255,255)')
+                .polygonsTransitionDuration(0)
+                .polygonLabel(({ properties: p }) => `
+          <b>${p.name}</b>
+        `)
+                .onPolygonClick((polygon) => {
+                    const { properties: p, geometry } = polygon;
+                    openModal({ id: p.id, name: p.name });
+
+                    // Zoom sur le pays
+                    const center = getPolygonCenter(geometry);
+                    globe.pointOfView({ lat: center.lat, lng: center.lng, altitude: 1.8 }, 1000);
+                })
+                .onPolygonHover(polygon => {
+                    document.body.style.cursor = polygon ? 'pointer' : 'default';
+                })
+                (document.getElementById('globe'));
+        });
+</script>
+{% endblock %}
