@@ -4,5 +4,11 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-axum = "0.8.8"
+axum = { version = "0.8.8", features = ["form"] }
 tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread"] }
+askama = "0.14"
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+validator = { version = "0.20", features = ["derive"] }
