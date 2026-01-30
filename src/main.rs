@@ -1,6 +1,8 @@
 mod error;
-mod handlers;
 mod templates;
+mod models;
+mod controllers;
+mod middlewares;
 
 use axum::routing::get;
 use axum::Router;
@@ -15,12 +17,12 @@ async fn main() {
         .init();
 
     let app = Router::new()
-        .route("/", get(handlers::get_index))
-        .route("/home", get(handlers::get_home))
-        .route("/login", get(handlers::get_login).post(handlers::post_login))
+        .route("/", get(controllers::ui::views::get_index))
+        .route("/home", get(controllers::ui::views::get_home))
+        .route("/auth/login", get(controllers::api::auth::get_login).post(controllers::api::auth::post_login))
         .route(
-            "/register",
-            get(handlers::get_register).post(handlers::post_register),
+            "/auth/register",
+            get(controllers::api::auth::get_register).post(controllers::api::auth::post_register),
         );
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:8080")
