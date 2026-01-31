@@ -22,8 +22,8 @@ Things to monitor / show:
 - Top 3 crypto currencies
 - Polymarket bets
 - POTUS TruthSocial and X accounts
-- US Military bases
-- Strategic Canal and straits
+- US Military bases 🏗️
+- Strategic Canal and straits 🏗
 - Maritime and Air traffic (e.g.: AF1)
 - OSINT accounts on X
 - NOTAM/NOTMAR
