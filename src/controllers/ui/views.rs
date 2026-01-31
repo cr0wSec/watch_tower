@@ -1,6 +1,6 @@
 use askama::Template;
 use axum::response::Html;
-use crate::error::AppError;
+use crate::utils::error::AppError;
 use crate::templates::{HomeTemplate, IndexTemplate};
 
 pub async fn get_index() -> Result<Html<String>, AppError> {

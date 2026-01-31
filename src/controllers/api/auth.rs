@@ -2,7 +2,7 @@ use askama::Template;
 use axum::Form;
 use axum::response::Html;
 use validator::Validate;
-use crate::error::AppError;
+use crate::utils::error::AppError;
 use crate::models::forms::login_form::LoginForm;
 use crate::models::forms::register_form::RegisterForm;
 use crate::templates::{LoginTemplate, RegisterTemplate};
