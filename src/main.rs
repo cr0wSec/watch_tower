@@ -3,6 +3,7 @@ mod templates;
 mod models;
 mod controllers;
 mod middlewares;
+mod static_data;
 
 use axum::routing::get;
 use axum::Router;
@@ -16,14 +17,30 @@ async fn main() {
         )
         .init();
 
-    let app = Router::new()
-        .route("/", get(controllers::ui::views::get_index))
-        .route("/home", get(controllers::ui::views::get_home))
+
+    let api_routes = Router::new()
+        .route("/layers", get(controllers::api::layers::get_all_layers))
+        .route("/layers/pipelines", get(controllers::api::layers::get_pipelines))
+        .route("/layers/straits", get(controllers::api::layers::get_straits))
+        .route(
+            "/layers/military-bases",
+            get(controllers::api::layers::get_military_bases),
+        )
+        .route(
+            "/layers/nuclear-plants",
+            get(controllers::api::layers::get_nuclear_plants),
+        )
         .route("/auth/login", get(controllers::api::auth::get_login).post(controllers::api::auth::post_login))
         .route(
             "/auth/register",
             get(controllers::api::auth::get_register).post(controllers::api::auth::post_register),
         );
+
+    let app = Router::new()
+        .route("/", get(controllers::ui::views::get_index))
+        .route("/home", get(controllers::ui::views::get_home)
+        )
+        .nest("/api", api_routes);
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:8080")
         .await
