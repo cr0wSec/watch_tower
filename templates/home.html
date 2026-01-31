@@ -7,6 +7,34 @@
 <script src="//unpkg.com/topojson-client"></script>
 <div id="globe"></div>
 
+<!-- Marker tooltip -->
+<div id="marker-tooltip" class="fixed bg-black/90 border border-gray-600 rounded-lg p-3 z-50 pointer-events-none hidden max-w-xs">
+    <h4 id="tooltip-name" class="font-semibold text-white mb-2"></h4>
+    <div id="tooltip-content" class="space-y-1 text-sm"></div>
+</div>
+
+<!-- Layer controls -->
+<div class="fixed bottom-4 left-4 bg-black/80 border border-gray-700 rounded-lg p-3 z-30">
+    <h4 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Layers</h4>
+    <div class="space-y-2 text-sm">
+        <label class="flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" id="toggle-pipelines" checked class="w-4 h-4 accent-orange-500">
+            <span class="w-4 h-1 rounded" style="background-color: #ff9900;"></span>
+            <span class="text-gray-300">Pipelines</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" id="toggle-military-bases" checked class="w-4 h-4 accent-blue-500">
+            <span class="w-3 h-3 rounded-full border-2 border-white" style="background-color: #3b82f6;"></span>
+            <span class="text-gray-300">Military Bases</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" id="toggle-straits" checked class="w-4 h-4 accent-purple-500">
+            <span class="w-3 h-3 rounded-full border-2 border-white" style="background-color: #8b5cf6;"></span>
+            <span class="text-gray-300">Straits & Canals</span>
+        </label>
+    </div>
+</div>
+
 <!-- Modal overlay -->
 <div id="modal-overlay" class="fixed inset-0 bg-black/50 hidden z-40" onclick="closeModal()"></div>
 
@@ -16,19 +44,19 @@
     <div class="flex items-center justify-between p-4 border-b border-gray-700">
         <div class="flex items-center gap-3">
             <span id="modal-flag" class="text-4xl">🏳️</span>
-            <h2 id="modal-country-name" class="text-xl font-bold text-white">Pays</h2>
+            <h2 id="modal-country-name" class="text-xl font-bold text-white">Country</h2>
         </div>
         <button onclick="closeModal()" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
     </div>
 
     <!-- Content -->
     <div class="p-4 space-y-4">
-        <!-- Informations générales -->
+        <!-- General information -->
         <section>
-            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Informations générales</h3>
+            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">General Information</h3>
             <div class="space-y-2 text-gray-300">
                 <div class="flex justify-between">
-                    <span class="text-gray-500">Capitale</span>
+                    <span class="text-gray-500">Capital</span>
                     <span id="modal-capital">—</span>
                 </div>
                 <div class="flex justify-between">
@@ -36,42 +64,42 @@
                     <span id="modal-population">—</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-500">Région</span>
+                    <span class="text-gray-500">Region</span>
                     <span id="modal-region">—</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-500">Langue(s)</span>
+                    <span class="text-gray-500">Language(s)</span>
                     <span id="modal-languages">—</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-500">Monnaie</span>
+                    <span class="text-gray-500">Currency</span>
                     <span id="modal-currency">—</span>
                 </div>
             </div>
         </section>
 
-        <!-- Gouvernement -->
+        <!-- Government -->
         <section>
-            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Gouvernement</h3>
+            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Government</h3>
             <div class="space-y-2 text-gray-300">
                 <div class="flex justify-between">
-                    <span class="text-gray-500">Chef d'État</span>
+                    <span class="text-gray-500">Head of State</span>
                     <span id="modal-leader">—</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-500">Régime</span>
+                    <span class="text-gray-500">Government Type</span>
                     <span id="modal-government-type">—</span>
                 </div>
             </div>
         </section>
 
-        <!-- Indicateurs de risque -->
+        <!-- Risk indicators -->
         <section>
-            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Indicateurs</h3>
+            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Indicators</h3>
             <div class="space-y-3">
                 <div>
                     <div class="flex justify-between text-sm mb-1">
-                        <span class="text-gray-500">Niveau de tension</span>
+                        <span class="text-gray-500">Tension Level</span>
                         <span id="modal-tension-level" class="text-yellow-500">—</span>
                     </div>
                     <div class="w-full bg-gray-800 rounded-full h-2">
@@ -80,7 +108,7 @@
                 </div>
                 <div>
                     <div class="flex justify-between text-sm mb-1">
-                        <span class="text-gray-500">Stabilité économique</span>
+                        <span class="text-gray-500">Economic Stability</span>
                         <span id="modal-stability-level" class="text-green-500">—</span>
                     </div>
                     <div class="w-full bg-gray-800 rounded-full h-2">
@@ -90,12 +118,12 @@
             </div>
         </section>
 
-        <!-- Actualités récentes -->
+        <!-- Recent news -->
         <section>
-            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Actualités récentes</h3>
+            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Recent News</h3>
             <div id="modal-news" class="space-y-2">
                 <div class="p-3 bg-gray-900 rounded-lg border border-gray-800">
-                    <p class="text-gray-500 text-sm italic">Aucune actualité disponible</p>
+                    <p class="text-gray-500 text-sm italic">No news available</p>
                 </div>
             </div>
         </section>
@@ -105,13 +133,13 @@
     <div id="modal-loading" class="absolute inset-0 bg-black/80 flex items-center justify-center hidden">
         <div class="flex flex-col items-center gap-2">
             <div class="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            <span class="text-gray-400 text-sm">Chargement...</span>
+            <span class="text-gray-400 text-sm">Loading...</span>
         </div>
     </div>
 </div>
 
 <script>
-    // Cache pour éviter les appels API répétés
+    // Cache to avoid repeated API calls
     const countryCache = new Map();
 
     const MODAL_HIDDEN_CLASS = 'translate-x-[calc(100%+1rem)]';
@@ -120,10 +148,10 @@
         document.getElementById('modal-overlay').classList.remove('hidden');
         document.getElementById('country-modal').classList.remove(MODAL_HIDDEN_CLASS);
 
-        // Afficher le nom du pays immédiatement
-        document.getElementById('modal-country-name').textContent = countryData.name || 'Pays inconnu';
+        // Display the country name immediately
+        document.getElementById('modal-country-name').textContent = countryData.name || 'Unknown country';
 
-        // TODO: Appel API pour récupérer les détails
+        // TODO: API call to fetch details
         // showLoading(true);
         // fetchCountryDetails(countryData.id);
     }
@@ -137,18 +165,18 @@
         document.getElementById('modal-loading').classList.toggle('hidden', !show);
     }
 
-    // Fermer avec Escape
+    // Close with Escape
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closeModal();
     });
 
-    // Calcule le centroïde approximatif d'un polygone GeoJSON
+    // Calculates the approximate centroid of a GeoJSON polygon
     function getPolygonCenter(geometry) {
         let coords = [];
         if (geometry.type === 'Polygon') {
             coords = geometry.coordinates[0];
         } else if (geometry.type === 'MultiPolygon') {
-            // Prendre le plus grand polygone
+            // Take the largest polygon
             let maxLen = 0;
             geometry.coordinates.forEach(poly => {
                 if (poly[0].length > maxLen) {
@@ -168,61 +196,294 @@
         };
     }
 
-    const nordstream2 = {
-        type: 'Feature',
-        properties: { name: 'Nord Stream 2' },
-        geometry: {
-            type: 'LineString',
-            coordinates: [
-                [28.75, 59.33],   // Vyborg
-                [26.5, 59.5],     // Golfe de Finlande
-                [24.0, 59.2],
-                [20.5, 58.5],     // Mer Baltique
-                [17.0, 55.5],
-                [14.5, 54.5],
-                [13.66, 54.14]    // Lubmin
-            ]
+    // Converts a pipeline from the API to a GeoJSON feature
+    function pipelineToGeoJSON(pipeline) {
+        return {
+            type: 'Feature',
+            properties: {
+                id: pipeline.id,
+                name: pipeline.name,
+                status: pipeline.status,
+                pipeline_type: pipeline.pipeline_type,
+                owner: pipeline.owner
+            },
+            geometry: {
+                type: 'LineString',
+                coordinates: pipeline.coordinates
+            }
+        };
+    }
+
+
+    // Color based on pipeline status
+    function getPipelineColor(pipeline) {
+        const status = pipeline.properties.status;
+        switch (status) {
+            case 'active': return '#00ff00';
+            case 'damaged': return '#ff0000';
+            case 'under_construction': return '#ffff00';
+            case 'planned': return '#888888';
+            case 'decommissioned': return '#444444';
+            default: return '#ff9900';
         }
+    }
+
+    // Color based on marker type
+    const MARKER_COLORS = {
+        military_base: '#3b82f6',  // blue
+        strait: '#8b5cf6',         // purple
     };
+
+    // Tooltip element
+    const tooltip = document.getElementById('marker-tooltip');
+
+    // Shows tooltip with marker data
+    function showTooltip(type, data, event) {
+        document.getElementById('tooltip-name').textContent = data.name;
+
+        const content = document.getElementById('tooltip-content');
+        let html = '';
+
+        if (type === 'military_base') {
+            html = `
+                <div class="flex justify-between gap-4">
+                    <span class="text-gray-500">Country</span>
+                    <span class="text-gray-300">${data.country || '—'}</span>
+                </div>
+                <div class="flex justify-between gap-4">
+                    <span class="text-gray-500">Operator</span>
+                    <span class="text-gray-300">${data.operator || '—'}</span>
+                </div>
+                <div class="flex justify-between gap-4">
+                    <span class="text-gray-500">Personnel</span>
+                    <span class="text-gray-300">${data.personnel ? data.personnel.toLocaleString() : '—'}</span>
+                </div>
+            `;
+        } else if (type === 'strait') {
+            const importanceColors = {
+                critical: 'bg-red-500',
+                high: 'bg-orange-500',
+                medium: 'bg-yellow-500',
+                low: 'bg-green-500'
+            };
+            const importanceLabels = {
+                critical: 'Critical',
+                high: 'High',
+                medium: 'Medium',
+                low: 'Low'
+            };
+            const importance = data.strategic_importance || 'medium';
+            const importanceColor = importanceColors[importance] || 'bg-gray-500';
+            const importanceLabel = importanceLabels[importance] || importance;
+
+            html = `
+                <div class="flex justify-between gap-4">
+                    <span class="text-gray-500">Type</span>
+                    <span class="text-gray-300">${data.strait_type === 'canal' ? 'Canal' : 'Strait'}</span>
+                </div>
+                <div class="flex justify-between gap-4">
+                    <span class="text-gray-500">Connects</span>
+                    <span class="text-gray-300">${data.connects ? data.connects.join(' — ') : '—'}</span>
+                </div>
+                <div class="flex justify-between gap-4">
+                    <span class="text-gray-500">Controlled by</span>
+                    <span class="text-gray-300">${data.controlled_by ? data.controlled_by.join(', ') : '—'}</span>
+                </div>
+                <div class="flex justify-between gap-4 items-center">
+                    <span class="text-gray-500">Importance</span>
+                    <span class="${importanceColor} text-white text-xs font-semibold px-2 py-0.5 rounded">${importanceLabel}</span>
+                </div>
+                ${data.traffic_volume ? `
+                <div class="flex justify-between gap-4">
+                    <span class="text-gray-500">Traffic</span>
+                    <span class="text-gray-300">${data.traffic_volume}</span>
+                </div>` : ''}
+            `;
+        }
+
+        if (data.notes) {
+            html += `
+                <div class="pt-1 border-t border-gray-700 mt-1">
+                    <p class="text-gray-400 text-xs italic">${data.notes}</p>
+                </div>
+            `;
+        }
+
+        content.innerHTML = html;
+        tooltip.classList.remove('hidden');
+        positionTooltip(event);
+    }
+
+    // Positions tooltip near cursor
+    function positionTooltip(event) {
+        const offsetX = 15;
+        const offsetY = 15;
+        let x = event.clientX + offsetX;
+        let y = event.clientY + offsetY;
+
+        // Prevent tooltip from going off-screen
+        const rect = tooltip.getBoundingClientRect();
+        if (x + rect.width > window.innerWidth) {
+            x = event.clientX - rect.width - offsetX;
+        }
+        if (y + rect.height > window.innerHeight) {
+            y = event.clientY - rect.height - offsetY;
+        }
+
+        tooltip.style.left = x + 'px';
+        tooltip.style.top = y + 'px';
+    }
+
+    // Hides tooltip
+    function hideTooltip() {
+        tooltip.classList.add('hidden');
+    }
+
+    // Creates an HTML element for a marker
+    function createMarker(type, data) {
+        const el = document.createElement('div');
+        el.style.width = '16px';
+        el.style.height = '16px';
+        el.style.marginLeft = '-8px';
+        el.style.marginTop = '-8px';
+        el.style.borderRadius = '50%';
+        el.style.backgroundColor = MARKER_COLORS[type];
+        el.style.border = '2px solid white';
+        el.style.cursor = 'pointer';
+        el.style.boxShadow = '0 0 6px ' + MARKER_COLORS[type];
+        el.style.pointerEvents = 'auto';
+
+        // Tooltip events
+        el.onmouseenter = (e) => {
+            showTooltip(type, data, e);
+        };
+        el.onmousemove = (e) => {
+            positionTooltip(e);
+        };
+        el.onmouseleave = () => {
+            hideTooltip();
+        };
+
+        return el;
+    }
+
+    // Prepares data for HTML markers
+    function prepareMarkers(militaryBases, straits) {
+        const markers = [];
+
+        militaryBases.forEach(base => {
+            markers.push({
+                lat: base.coordinates[1],
+                lng: base.coordinates[0],
+                type: 'military_base',
+                data: base
+            });
+        });
+
+        straits.forEach(strait => {
+            markers.push({
+                lat: strait.coordinates[1],
+                lng: strait.coordinates[0],
+                type: 'strait',
+                data: strait
+            });
+        });
+
+        return markers;
+    }
 
     // Globe
     let globe;
-    fetch('https://unpkg.com/world-atlas@2/countries-110m.json')
-        .then(res => res.json())
-        .then(topology => {
-            const countries = topojson.feature(topology, topology.objects.countries);
-            globe = Globe()
-                .pathsData([nordstream2])
-                .pathPoints(d => d.geometry.coordinates)
+    let hoveredPolygon = null;
+    let allLayers = null;
+    let isHoveringMarker = false;
+
+    // Layer visibility state
+    const layerVisibility = {
+        pipelines: true,
+        military_bases: true,
+        straits: true
+    };
+
+    // Updates displayed markers based on visibility
+    function updateMarkers() {
+        if (!globe || !allLayers) return;
+        const visibleMarkers = prepareMarkers(
+            layerVisibility.military_bases ? allLayers.military_bases : [],
+            layerVisibility.straits ? allLayers.straits : []
+        );
+        globe.htmlElementsData(visibleMarkers);
+    }
+
+    // Updates displayed pipelines based on visibility
+    function updatePipelines() {
+        if (!globe || !allLayers) return;
+        const visiblePipelines = layerVisibility.pipelines
+            ? allLayers.pipelines.map(pipelineToGeoJSON)
+            : [];
+        globe.pathsData(visiblePipelines);
+    }
+
+    // Event listeners for toggles
+    document.getElementById('toggle-pipelines').addEventListener('change', (e) => {
+        layerVisibility.pipelines = e.target.checked;
+        updatePipelines();
+    });
+
+    document.getElementById('toggle-military-bases').addEventListener('change', (e) => {
+        layerVisibility.military_bases = e.target.checked;
+        updateMarkers();
+    });
+
+    document.getElementById('toggle-straits').addEventListener('change', (e) => {
+        layerVisibility.straits = e.target.checked;
+        updateMarkers();
+    });
+
+    Promise.all([
+        fetch('https://unpkg.com/world-atlas@2/countries-110m.json').then(res => res.json()),
+        fetch('/api/layers').then(res => res.json())
+    ]).then(([topology, layers]) => {
+        allLayers = layers;
+        const countries = topojson.feature(topology, topology.objects.countries);
+        const pipelinesGeoJSON = layers.pipelines.map(pipelineToGeoJSON);
+        const markers = prepareMarkers(layers.military_bases, layers.straits);
+
+        globe = Globe()
+            .pathsData(pipelinesGeoJSON)
+            .pathPoints(d => d.geometry.coordinates)
                 .pathPointLat(p => p[1])
                 .pathPointLng(p => p[0])
-                .pathColor(() => '#ff9900')
+                .pathColor(d => getPipelineColor(d))
                 .pathStroke(4)
                 .pathDashLength(0.5)
                 .pathDashGap(0.1)
                 .pathDashAnimateTime(2000)
-                .pathLabel(d => d.properties.name)
+                .htmlElementsData(markers)
+                .htmlLat(d => d.lat)
+                .htmlLng(d => d.lng)
+                .htmlElement(d => createMarker(d.type, d.data))
                 .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
                 .showAtmosphere(false)
                 .backgroundColor('#000000')
                 .polygonsData(countries.features)
-                .polygonCapColor(() => 'rgba(60, 60, 60, 0.6)')
+                .polygonCapColor(d => d === hoveredPolygon ? 'rgba(120, 120, 120, 0.8)' : 'rgba(60, 60, 60, 0.6)')
                 .polygonSideColor(() => 'rgba(60, 60, 60, 0.1)')
                 .polygonStrokeColor(() => 'rgb(255,255,255)')
                 .polygonsTransitionDuration(0)
-                .polygonLabel(({ properties: p }) => `
-          <b>${p.name}</b>
-        `)
+                .polygonLabel(({ properties: p }) => `<b>${p.name}</b>`)
+                .onPolygonHover(polygon => {
+                    hoveredPolygon = polygon;
+                    globe.polygonCapColor(globe.polygonCapColor());
+                    document.body.style.cursor = polygon ? 'pointer' : 'default';
+                })
                 .onPolygonClick((polygon) => {
                     const { properties: p, geometry } = polygon;
                     openModal({ id: p.id, name: p.name });
 
-                    // Zoom sur le pays
+                    // Zoom to country
                     const center = getPolygonCenter(geometry);
                     globe.pointOfView({ lat: center.lat, lng: center.lng, altitude: 1.8 }, 1000);
-                })
-                .onPolygonHover(polygon => {
-                    document.body.style.cursor = polygon ? 'pointer' : 'default';
                 })
                 (document.getElementById('globe'));
         });
