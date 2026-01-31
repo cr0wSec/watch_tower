@@ -1,10 +1,9 @@
-use std::os::macos::raw::stat;
-use axum::Json;
 use crate::models::layers::military_base::MilitaryBase;
 use crate::models::layers::nuclear_plant::NuclearPlant;
 use crate::models::layers::pipeline::Pipeline;
 use crate::models::layers::strait::Strait;
 use crate::static_data;
+use axum::Json;
 
 pub async fn get_straits() -> Json<Vec<Strait>> {
     Json(static_data::get_straits())
