@@ -12,3 +12,11 @@ thiserror = "2"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 validator = { version = "0.20", features = ["derive"] }
+once_cell = "1.21.3"
+argon2 = { version = "0.5.3", features = ["std"] }
+blake3 = "1.8.3"
+dotenvy = { version = "0.15.7", features = ["cli"] }
+diesel = { version = "2.3.6", features = ["chrono", "postgres", "uuid"] }
+futures = "0.3.31"
+uuid = { version = "1.18.1", features = ["v4", "serde"] }
+hex = "0.4.3"
