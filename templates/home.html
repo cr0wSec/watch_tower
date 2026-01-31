@@ -139,9 +139,6 @@
 </div>
 
 <script>
-    // Cache to avoid repeated API calls
-    const countryCache = new Map();
-
     const MODAL_HIDDEN_CLASS = 'translate-x-[calc(100%+1rem)]';
 
     function openModal(countryData) {
@@ -212,20 +209,6 @@
                 coordinates: pipeline.coordinates
             }
         };
-    }
-
-
-    // Color based on pipeline status
-    function getPipelineColor(pipeline) {
-        const status = pipeline.properties.status;
-        switch (status) {
-            case 'active': return '#00ff00';
-            case 'damaged': return '#ff0000';
-            case 'under_construction': return '#ffff00';
-            case 'planned': return '#888888';
-            case 'decommissioned': return '#444444';
-            default: return '#ff9900';
-        }
     }
 
     // Color based on marker type
@@ -454,7 +437,7 @@
             .pathPoints(d => d.geometry.coordinates)
                 .pathPointLat(p => p[1])
                 .pathPointLng(p => p[0])
-                .pathColor(d => getPipelineColor(d))
+                .pathColor(() => '#ff9900')
                 .pathStroke(4)
                 .pathDashLength(0.5)
                 .pathDashGap(0.1)
