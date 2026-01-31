@@ -5,34 +5,180 @@
 {% block content %}
 <script src="//unpkg.com/globe.gl"></script>
 <script src="//unpkg.com/topojson-client"></script>
-<div id="globe"></div>
+
+<!-- Main layout -->
+<div class="flex h-screen">
+    <!-- Markets Sidebar -->
+    <div id="markets-sidebar" class="w-72 bg-black border-r border-gray-800 flex flex-col transition-all duration-300 overflow-hidden">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-3 border-b border-gray-800">
+            <h2 class="text-sm font-bold text-white uppercase tracking-wide">Markets</h2>
+            <button id="toggle-sidebar" class="text-gray-400 hover:text-white" title="Collapse sidebar">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="p-3 space-y-3 flex-1 overflow-y-auto">
+            <!-- Indices -->
+            <section class="pb-3 border-b border-gray-800">
+                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Indices</h3>
+                <div class="grid grid-cols-2 gap-1.5">
+                    <div class="market-card bg-gray-900/50 rounded p-1.5">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs text-gray-300">S&P 500</span>
+                            <span class="text-xs text-green-400">+1.24%</span>
+                        </div>
+                        <div class="text-sm font-semibold text-white">5,234</div>
+                        <svg class="sparkline" data-values="45,48,42,50,55,52,58,62,60,65" data-color="#22c55e"></svg>
+                    </div>
+                    <div class="market-card bg-gray-900/50 rounded p-1.5">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs text-gray-300">Nasdaq</span>
+                            <span class="text-xs text-red-400">-0.32%</span>
+                        </div>
+                        <div class="text-sm font-semibold text-white">16,432</div>
+                        <svg class="sparkline" data-values="70,68,72,65,63,60,58,62,55,52" data-color="#ef4444"></svg>
+                    </div>
+                    <div class="market-card bg-gray-900/50 rounded p-1.5">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs text-gray-300">Dow Jones</span>
+                            <span class="text-xs text-green-400">+0.87%</span>
+                        </div>
+                        <div class="text-sm font-semibold text-white">38,654</div>
+                        <svg class="sparkline" data-values="40,42,45,43,48,52,50,55,58,60" data-color="#22c55e"></svg>
+                    </div>
+                    <div class="market-card bg-gray-900/50 rounded p-1.5">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs text-gray-300">Russell</span>
+                            <span class="text-xs text-green-400">+0.45%</span>
+                        </div>
+                        <div class="text-sm font-semibold text-white">2,054</div>
+                        <svg class="sparkline" data-values="42,44,43,46,48,47,50,52,51,53" data-color="#22c55e"></svg>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Crypto -->
+            <section class="pb-3 border-b border-gray-800">
+                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Crypto</h3>
+                <div class="grid grid-cols-2 gap-1.5">
+                    <div class="market-card bg-gray-900/50 rounded p-1.5">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs text-gray-300">BTC</span>
+                            <span class="text-xs text-green-400">+2.45%</span>
+                        </div>
+                        <div class="text-sm font-semibold text-white">$67,842</div>
+                        <svg class="sparkline" data-values="30,35,32,40,45,42,50,55,60,65" data-color="#22c55e"></svg>
+                    </div>
+                    <div class="market-card bg-gray-900/50 rounded p-1.5">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs text-gray-300">ETH</span>
+                            <span class="text-xs text-green-400">+1.82%</span>
+                        </div>
+                        <div class="text-sm font-semibold text-white">$3,245</div>
+                        <svg class="sparkline" data-values="35,38,40,42,38,45,50,48,52,55" data-color="#22c55e"></svg>
+                    </div>
+                    <div class="market-card bg-gray-900/50 rounded p-1.5">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs text-gray-300">SOL</span>
+                            <span class="text-xs text-red-400">-3.21%</span>
+                        </div>
+                        <div class="text-sm font-semibold text-white">$142</div>
+                        <svg class="sparkline" data-values="65,60,58,55,50,52,48,45,42,40" data-color="#ef4444"></svg>
+                    </div>
+                    <div class="market-card bg-gray-900/50 rounded p-1.5">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs text-gray-300">XRP</span>
+                            <span class="text-xs text-green-400">+0.98%</span>
+                        </div>
+                        <div class="text-sm font-semibold text-white">$0.52</div>
+                        <svg class="sparkline" data-values="48,50,49,52,51,53,52,54,53,55" data-color="#22c55e"></svg>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIX & Commodities -->
+            <section class="pb-3 border-b border-gray-800">
+                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">VIX & Commodities</h3>
+                <div class="grid grid-cols-2 gap-1.5">
+                    <div class="market-card bg-gray-900/50 rounded p-1.5">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs text-gray-300">VIX</span>
+                            <span class="text-xs text-red-400">+5.42%</span>
+                        </div>
+                        <div class="text-sm font-semibold text-white">18.54</div>
+                        <svg class="sparkline" data-values="12,14,13,15,18,16,20,22,19,18" data-color="#ef4444"></svg>
+                    </div>
+                    <div class="market-card bg-gray-900/50 rounded p-1.5">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs text-gray-300">Oil</span>
+                            <span class="text-xs text-green-400">+0.95%</span>
+                        </div>
+                        <div class="text-sm font-semibold text-white">$78.42</div>
+                        <svg class="sparkline" data-values="72,74,73,76,75,78,77,80,79,78" data-color="#22c55e"></svg>
+                    </div>
+                    <div class="market-card bg-gray-900/50 rounded p-1.5">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs text-gray-300">Gold</span>
+                            <span class="text-xs text-green-400">+0.34%</span>
+                        </div>
+                        <div class="text-sm font-semibold text-white">$2,024</div>
+                        <svg class="sparkline" data-values="50,52,51,53,52,54,53,55,54,55" data-color="#22c55e"></svg>
+                    </div>
+                    <div class="market-card bg-gray-900/50 rounded p-1.5">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs text-gray-300">Silver</span>
+                            <span class="text-xs text-red-400">-0.21%</span>
+                        </div>
+                        <div class="text-sm font-semibold text-white">$22.84</div>
+                        <svg class="sparkline" data-values="24,23,24,23,22,23,22,23,22,23" data-color="#ef4444"></svg>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Layers -->
+            <section>
+                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Layers</h3>
+                <div class="space-y-1.5 text-xs">
+                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                        <input type="checkbox" id="toggle-pipelines" checked class="w-3 h-3 accent-orange-500">
+                        <span class="w-4 h-0.5 rounded" style="background-color: #ff9900;"></span>
+                        <span class="text-gray-300">Pipelines</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                        <input type="checkbox" id="toggle-military-bases" checked class="w-3 h-3 accent-blue-500">
+                        <span class="w-2.5 h-2.5 rounded-full border border-white" style="background-color: #3b82f6;"></span>
+                        <span class="text-gray-300">Military Bases</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                        <input type="checkbox" id="toggle-straits" checked class="w-3 h-3 accent-purple-500">
+                        <span class="w-2.5 h-2.5 rounded-full border border-white" style="background-color: #8b5cf6;"></span>
+                        <span class="text-gray-300">Straits & Canals</span>
+                    </label>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Collapsed sidebar button -->
+    <button id="open-sidebar" class="hidden absolute top-4 left-4 bg-black border border-gray-700 rounded-lg p-2 z-30 hover:bg-gray-800 transition-colors">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+        </svg>
+    </button>
+
+    <!-- Globe container -->
+    <div id="globe-container" class="flex-1 relative">
+        <div id="globe" class="w-full h-full"></div>
+    </div>
+</div>
 
 <!-- Marker tooltip -->
 <div id="marker-tooltip" class="fixed bg-black/90 border border-gray-600 rounded-lg p-3 z-50 pointer-events-none hidden max-w-xs">
     <h4 id="tooltip-name" class="font-semibold text-white mb-2"></h4>
     <div id="tooltip-content" class="space-y-1 text-sm"></div>
-</div>
-
-<!-- Layer controls -->
-<div class="fixed bottom-4 left-4 bg-black/80 border border-gray-700 rounded-lg p-3 z-30">
-    <h4 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Layers</h4>
-    <div class="space-y-2 text-sm">
-        <label class="flex items-center gap-2 cursor-pointer select-none">
-            <input type="checkbox" id="toggle-pipelines" checked class="w-4 h-4 accent-orange-500">
-            <span class="w-4 h-1 rounded" style="background-color: #ff9900;"></span>
-            <span class="text-gray-300">Pipelines</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer select-none">
-            <input type="checkbox" id="toggle-military-bases" checked class="w-4 h-4 accent-blue-500">
-            <span class="w-3 h-3 rounded-full border-2 border-white" style="background-color: #3b82f6;"></span>
-            <span class="text-gray-300">Military Bases</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer select-none">
-            <input type="checkbox" id="toggle-straits" checked class="w-4 h-4 accent-purple-500">
-            <span class="w-3 h-3 rounded-full border-2 border-white" style="background-color: #8b5cf6;"></span>
-            <span class="text-gray-300">Straits & Canals</span>
-        </label>
-    </div>
 </div>
 
 <!-- Modal overlay -->
@@ -139,6 +285,80 @@
 </div>
 
 <script>
+    // Sparkline generator
+    function generateSparklines() {
+        document.querySelectorAll('svg.sparkline').forEach(svg => {
+            const values = svg.dataset.values.split(',').map(Number);
+            const color = svg.dataset.color || '#22c55e';
+            const width = 100;
+            const height = 20;
+
+            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+            svg.setAttribute('width', '100%');
+            svg.setAttribute('height', height);
+            svg.style.marginTop = '4px';
+
+            const min = Math.min(...values);
+            const max = Math.max(...values);
+            const range = max - min || 1;
+
+            const points = values.map((v, i) => {
+                const x = (i / (values.length - 1)) * width;
+                const y = height - ((v - min) / range) * (height - 4) - 2;
+                return `${x},${y}`;
+            }).join(' ');
+
+            // Create gradient
+            const gradientId = 'gradient-' + Math.random().toString(36).substr(2, 9);
+            svg.innerHTML = `
+                <defs>
+                    <linearGradient id="${gradientId}" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:${color};stop-opacity:0.3" />
+                        <stop offset="100%" style="stop-color:${color};stop-opacity:0" />
+                    </linearGradient>
+                </defs>
+                <polygon points="0,${height} ${points} ${width},${height}" fill="url(#${gradientId})" />
+                <polyline points="${points}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            `;
+        });
+    }
+
+    // Sidebar toggle
+    const sidebar = document.getElementById('markets-sidebar');
+    const openBtn = document.getElementById('open-sidebar');
+    const toggleBtn = document.getElementById('toggle-sidebar');
+    const globeContainer = document.getElementById('globe-container');
+
+    function resizeGlobe() {
+        if (globe) {
+            const width = globeContainer.clientWidth;
+            const height = globeContainer.clientHeight;
+            globe.width(width).height(height);
+        }
+    }
+
+    toggleBtn.addEventListener('click', () => {
+        sidebar.style.width = '0';
+        sidebar.style.padding = '0';
+        sidebar.style.borderRight = 'none';
+        openBtn.classList.remove('hidden');
+        setTimeout(resizeGlobe, 350);
+    });
+
+    openBtn.addEventListener('click', () => {
+        sidebar.style.width = '';
+        sidebar.style.padding = '';
+        sidebar.style.borderRight = '';
+        openBtn.classList.add('hidden');
+        setTimeout(resizeGlobe, 350);
+    });
+
+    // Resize globe on window resize
+    window.addEventListener('resize', resizeGlobe);
+
+    // Initialize sparklines on load
+    document.addEventListener('DOMContentLoaded', generateSparklines);
+
     const MODAL_HIDDEN_CLASS = 'translate-x-[calc(100%+1rem)]';
 
     function openModal(countryData) {
@@ -432,43 +652,47 @@
         const pipelinesGeoJSON = layers.pipelines.map(pipelineToGeoJSON);
         const markers = prepareMarkers(layers.military_bases, layers.straits);
 
+        const container = document.getElementById('globe-container');
+
         globe = Globe()
+            .width(container.clientWidth)
+            .height(container.clientHeight)
             .pathsData(pipelinesGeoJSON)
             .pathPoints(d => d.geometry.coordinates)
-                .pathPointLat(p => p[1])
-                .pathPointLng(p => p[0])
-                .pathColor(() => '#ff9900')
-                .pathStroke(4)
-                .pathDashLength(0.5)
-                .pathDashGap(0.1)
-                .pathDashAnimateTime(2000)
-                .htmlElementsData(markers)
-                .htmlLat(d => d.lat)
-                .htmlLng(d => d.lng)
-                .htmlElement(d => createMarker(d.type, d.data))
-                .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
-                .showAtmosphere(false)
-                .backgroundColor('#000000')
-                .polygonsData(countries.features)
-                .polygonCapColor(d => d === hoveredPolygon ? 'rgba(120, 120, 120, 0.8)' : 'rgba(60, 60, 60, 0.6)')
-                .polygonSideColor(() => 'rgba(60, 60, 60, 0.1)')
-                .polygonStrokeColor(() => 'rgb(255,255,255)')
-                .polygonsTransitionDuration(0)
-                .polygonLabel(({ properties: p }) => `<b>${p.name}</b>`)
-                .onPolygonHover(polygon => {
-                    hoveredPolygon = polygon;
-                    globe.polygonCapColor(globe.polygonCapColor());
-                    document.body.style.cursor = polygon ? 'pointer' : 'default';
-                })
-                .onPolygonClick((polygon) => {
-                    const { properties: p, geometry } = polygon;
-                    openModal({ id: p.id, name: p.name });
+            .pathPointLat(p => p[1])
+            .pathPointLng(p => p[0])
+            .pathColor(() => '#ff9900')
+            .pathStroke(4)
+            .pathDashLength(0.5)
+            .pathDashGap(0.1)
+            .pathDashAnimateTime(2000)
+            .htmlElementsData(markers)
+            .htmlLat(d => d.lat)
+            .htmlLng(d => d.lng)
+            .htmlElement(d => createMarker(d.type, d.data))
+            .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
+            .showAtmosphere(false)
+            .backgroundColor('#000000')
+            .polygonsData(countries.features)
+            .polygonCapColor(d => d === hoveredPolygon ? 'rgba(120, 120, 120, 0.8)' : 'rgba(60, 60, 60, 0.6)')
+            .polygonSideColor(() => 'rgba(60, 60, 60, 0.1)')
+            .polygonStrokeColor(() => 'rgb(255,255,255)')
+            .polygonsTransitionDuration(0)
+            .polygonLabel(({ properties: p }) => `<b>${p.name}</b>`)
+            .onPolygonHover(polygon => {
+                hoveredPolygon = polygon;
+                globe.polygonCapColor(globe.polygonCapColor());
+                document.body.style.cursor = polygon ? 'pointer' : 'default';
+            })
+            .onPolygonClick((polygon) => {
+                const { properties: p, geometry } = polygon;
+                openModal({ id: p.id, name: p.name });
 
-                    // Zoom to country
-                    const center = getPolygonCenter(geometry);
-                    globe.pointOfView({ lat: center.lat, lng: center.lng, altitude: 1.8 }, 1000);
-                })
-                (document.getElementById('globe'));
+                // Zoom to country
+                const center = getPolygonCenter(geometry);
+                globe.pointOfView({ lat: center.lat, lng: center.lng, altitude: 1.8 }, 1000);
+            })
+            (document.getElementById('globe'));
         });
 </script>
 {% endblock %}
