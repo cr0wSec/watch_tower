@@ -25,6 +25,6 @@ pub enum StraitType {
 pub enum Importance {
     Critical,
     High,
-    Medium,
-    Low,
+    // Medium,
+    // Low,
 }
