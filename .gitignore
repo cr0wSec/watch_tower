@@ -22,8 +22,8 @@ target
 
 
 # ENV files
-./.env
-infra/.env
+.env
+**/.env
 
 # Others
 .claude
