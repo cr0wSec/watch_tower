@@ -1,9 +1,9 @@
-mod error;
 mod templates;
 mod models;
 mod controllers;
 mod middlewares;
 mod static_data;
+mod utils;
 
 use axum::routing::get;
 use axum::Router;
