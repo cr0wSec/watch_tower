@@ -1,4 +1,6 @@
-FROM ubuntu:latest
-LABEL authors="jdoe"
+FROM rust:1.91
 
-ENTRYPOINT ["top", "-b"]
+# Install cargo-watch globally
+RUN cargo install diesel_cli --no-default-features --features postgres
+
+WORKDIR /data

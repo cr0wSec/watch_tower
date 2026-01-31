@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "PostgreSQL",
+      "Group": "Servers",
+      "Host": "database",
+      "Port": 5432,
+      "MaintenanceDB": "watchtower_db",
+      "SSLMode": "prefer",
+      "Username": "sysadmin",
+      "Password": "VERY_SENSITIVE_PASSWORD"
+    }
+  }
+}
