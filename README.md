@@ -2,7 +2,7 @@
 A near real-time world monitoring tool
 
 ## Technologies used
-
+Rust, Axum, Postgresql, Diesel
 
 ## Road Map
 ### Features to add
@@ -11,7 +11,7 @@ A near real-time world monitoring tool
 - Cache
 
 Things to monitor / show:
-- Market
+- Markets
 - Commodities / VIX
 - Natural Disasters
 - US fleet position
