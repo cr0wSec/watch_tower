@@ -11,7 +11,7 @@ A near real-time world monitoring tool
 - Cache
 
 Things to monitor / show:
-- Markets
+- Market
 - Commodities / VIX
 - Natural Disasters
 - US fleet position
