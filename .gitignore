@@ -24,7 +24,3 @@ target
 # ENV files
 .env
 **/.env
-
-# Others
-.claude
-.github/*
