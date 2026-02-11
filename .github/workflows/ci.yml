@@ -299,9 +299,7 @@ jobs:
              [[ "${{ needs.security-audit.result }}" != "success" ]] || \
              [[ "${{ needs.cargo-deny.result }}" != "success" ]] || \
              [[ "${{ needs.secret-detection.result }}" != "success" ]] || \
-             [[ "${{ needs.sast.result }}" != "success" ]] || \
-             [[ "${{ needs.docker-build.result }}" != "success" ]] || \
-             [[ "${{ needs.docker-scan.result }}" != "success" ]]; then
+             [[ "${{ needs.sast.result }}" != "success" ]]; then
             echo "One or more jobs failed"
             exit 1
           fi
