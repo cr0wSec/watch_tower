@@ -21,3 +21,6 @@ diesel = { version = "2.3.6", features = ["chrono", "postgres", "uuid"] }
 futures = "0.3.31"
 uuid = { version = "1.18.1", features = ["v4", "serde"] }
 hex = "0.4.3"
+tower-http = { version = "0.6.8", features = ["trace"] }
+http-body-util = "0.1.3"
+tower = "0.5.3"
