@@ -1,4 +1,3 @@
-
 mod config;
 mod controllers;
 use watch_tower::run;
