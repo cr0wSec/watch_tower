@@ -204,21 +204,25 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
   cargo-deny:
-    name: License check (cargo-deny)
+    name: Dependency check (cargo-deny)
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        checks:
+          - advisories
+          - bans licenses sources
+
+    # Advisories don't break CI immediately
+    continue-on-error: ${{ matrix.checks == 'advisories' }}
 
     steps:
       - name: Code checkout
         uses: actions/checkout@v4
 
-      - name: Rust install
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install cargo-deny
-        run: cargo install cargo-deny --locked
-
       - name: Run cargo-deny
-        run: cargo deny check
+        uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check ${{ matrix.checks }}
 
   secret-detection:
     name: Secret detection
