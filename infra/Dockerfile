@@ -1,6 +1,6 @@
 # CI image watch_tower
 
-FROM rust:1.83-slim-bookworm
+FROM rust:1.93-slim-bookworm
 
 LABEL org.opencontainers.image.source="https://github.com/cr0wSec/watch_tower"
 LABEL org.opencontainers.image.description="CI image for watch_tower"
