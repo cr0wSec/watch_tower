@@ -306,7 +306,7 @@ jobs:
           fi
 
       - name: Generate SBOM
-        run: cargo cyclonedx --format json --locked
+        run: cargo cyclonedx --format json
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
