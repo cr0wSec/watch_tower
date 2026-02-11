@@ -1,6 +1,6 @@
-pub mod event;
-pub mod user;
 pub mod country;
+mod db;
+pub mod event;
 pub mod forms;
 pub mod layers;
-mod db;
+pub mod user;

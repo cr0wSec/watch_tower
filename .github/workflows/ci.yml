@@ -1,0 +1,330 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+
+# Default minimal permissions for all jobs
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  RUSTFLAGS: "-D warnings"
+
+
+jobs:
+  quality:
+    name: Quality Gate (${{ matrix.rust }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        rust: [stable, beta]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+          components: rustfmt, clippy
+
+      - name: Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: quality-${{ matrix.rust }}
+
+      - name: Check
+        run: cargo check --all-features --locked
+
+      - name: Format
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets --all-features --locked -- -D warnings
+
+
+  tests-unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: quality
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: tests-unit
+
+      - name: Run unit tests
+        run: cargo test --lib --all-features --locked
+
+
+  tests-integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: quality
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: watchtower
+          POSTGRES_PASSWORD: watchtower
+          POSTGRES_DB: watchtower_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://watchtower:watchtower@localhost:5432/watchtower_test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: tests-integration
+
+      - name: Cache Diesel CLI
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/diesel
+          key: diesel-cli-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install Diesel CLI
+        run: |
+          if ! command -v diesel &> /dev/null; then
+            cargo install diesel_cli --no-default-features --features postgres --locked
+          fi
+
+      - name: Run migrations
+        run: diesel migration run --migration-dir infra/migrations
+
+      - name: Run integration tests
+        run: cargo test --test '*' --all-features --locked
+
+
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    needs: [tests-unit, tests-integration]
+    if: github.ref == 'refs/heads/main'
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: watchtower
+          POSTGRES_PASSWORD: watchtower
+          POSTGRES_DB: watchtower_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://watchtower:watchtower@localhost:5432/watchtower_test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: coverage
+
+      - name: Cache Cargo binaries
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/diesel
+            ~/.cargo/bin/cargo-tarpaulin
+          key: cargo-bins-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install Diesel CLI
+        run: |
+          if ! command -v diesel &> /dev/null; then
+            cargo install diesel_cli --no-default-features --features postgres --locked
+          fi
+
+      - name: Install Tarpaulin
+        run: |
+          if ! command -v cargo-tarpaulin &> /dev/null; then
+            cargo install cargo-tarpaulin --locked
+          fi
+
+      - name: Run migrations
+        run: diesel migration run --migration-dir infra/migrations
+
+      - name: Run coverage
+        run: cargo tarpaulin --workspace --all-features --locked --out xml
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: cobertura.xml
+
+
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      checks: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cargo Audit
+        uses: rustsec/audit-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  cargo-deny:
+    name: Cargo Deny (${{ matrix.checks }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        checks:
+          - advisories
+          - bans licenses sources
+
+    continue-on-error: ${{ matrix.checks == 'advisories' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run cargo-deny
+        uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check ${{ matrix.checks }}
+
+  gitleaks:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  semgrep:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/rust
+            p/security-audit
+            p/secrets
+
+
+  sbom:
+    name: SBOM Generation
+    runs-on: ubuntu-latest
+    needs: [tests-unit, tests-integration]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: sbom
+
+      - name: Cache cargo-cyclonedx
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/cargo-cyclonedx
+          key: cargo-cyclonedx-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install cargo-cyclonedx
+        run: |
+          if ! command -v cargo-cyclonedx &> /dev/null; then
+            cargo install cargo-cyclonedx --locked
+          fi
+
+      - name: Generate SBOM
+        run: cargo cyclonedx --format json --locked
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: bom.json
+
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
