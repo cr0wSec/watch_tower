@@ -1,8 +1,8 @@
-use crate::libs::run;
+use crate::lib::run;
 
 mod config;
 mod controllers;
-mod libs;
+mod lib;
 mod middlewares;
 mod models;
 mod schema;
