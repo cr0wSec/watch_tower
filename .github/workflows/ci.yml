@@ -1,4 +1,372 @@
-name: ci.yml
+name: CI
 on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  RUSTFLAGS: "-D warnings"
 
 jobs:
+  fmt:
+    name: Formatting (rustfmt)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Rust install
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Check formatting
+        run: cargo fmt --all --check
+
+  clippy:
+    name: Linting (clippy)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Rust install
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cargo cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [fmt, clippy]
+
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Rust install
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cargo cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Compilation
+        run: cargo build --release
+
+      # Allows other jobs to use it without needing to recompile
+      - name: Upload binary as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: watchtower-binary
+          path: target/release/watchtower
+          retention-days: 7
+
+  test-unit:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Rust install
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cargo cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run unit tests
+        run: cargo test --lib --all-features
+
+  test-integration:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    needs: build
+
+    # Service PostgreSQL
+    # Accessible from localhost:5432 inside the steps
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: watchtower
+          POSTGRES_PASSWORD: watchtower
+          POSTGRES_DB: watchtower_test
+        ports:
+          - 5432:5432
+        # Health check : waits for PostgreSQL to be ready, prevents the test to run without the db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://watchtower:watchtower@localhost:5432/watchtower_test
+
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Rust install
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cargo cache
+        uses: Swatinem/rust-cache@v2
+
+      # Install diesel_cli for migrations with postgres support
+      - name: Diesel_cli install
+        run: cargo install diesel_cli --no-default-features --features postgres
+
+      # Execute migrations
+      - name: Migrations
+        run: diesel migration run --migration-dir infra/migrations
+
+      # --test '*' : all files in tests/
+      - name: Integration tests
+        run: cargo test --test '*' --all-features
+
+  coverage:
+    name: Code coverage
+    runs-on: ubuntu-latest
+    needs: build
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: watchtower
+          POSTGRES_PASSWORD: watchtower
+          POSTGRES_DB: watchtower_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://watchtower:watchtower@localhost:5432/watchtower_test
+
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Rust install
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cargo cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Diesel_cli install
+        run: cargo install diesel_cli --no-default-features --features postgres
+
+      - name: Run migrations
+        run: diesel migration run --migration-dir infra/migrations
+
+      - name: Cargo-tarpaulin install
+        run: cargo install cargo-tarpaulin
+
+      - name: Generate coverage report
+        run: cargo tarpaulin --out xml --out html --all-features --workspace
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            tarpaulin-report.html
+            cobertura.xml
+          retention-days: 30
+
+  security-audit:
+    name: Security audit (cargo-audit)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Dependencies audit
+        uses: rustsec/audit-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  cargo-deny:
+    name: License check (cargo-deny)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Run cargo-deny
+        uses: EmbarkStudios/cargo-deny-action@v1
+
+  secret-detection:
+    name: Secret detection
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+        with:
+          # Fetch complete history
+          fetch-depth: 0
+
+      - name: Scan with gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  sast:
+    name: Static analysis (SAST)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Analysis with Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/rust
+            p/security-audit
+            p/secrets
+
+  dependency-review:
+    name: Dependency review
+    runs-on: ubuntu-latest
+    # Condition : only PR
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Dependency review
+        uses: actions/dependency-review-action@v4
+        with:
+          # Fails on Critical or High
+          fail-on-severity: high
+
+
+  docker-build:
+    name: Docker build
+    runs-on: ubuntu-latest
+    needs: [test-unit, test-integration]
+
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t watchtower:${{ github.sha }} -f infra/Dockerfile .
+
+      # Save image for the scan job
+      - name: Save Docker image
+        run: docker save watchtower:${{ github.sha }} -o watchtower-image.tar
+
+      - name: Upload Docker image
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: watchtower-image.tar
+          retention-days: 1
+
+  docker-scan:
+    name: Docker scan (Trivy)
+    runs-on: ubuntu-latest
+    needs: docker-build
+
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Download Docker image
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+
+      - name: Load Docker image
+        run: docker load -i watchtower-image.tar
+
+      # Scan and fail on CRITICAL/HIGH
+      - name: Scan with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: watchtower:${{ github.sha }}
+          exit-code: 1
+          severity: CRITICAL,HIGH
+          format: table
+
+      # Generate SARIF report (always, even if previous step failed)
+      - name: Trivy scan (SARIF report)
+        uses: aquasecurity/trivy-action@master
+        if: always()
+        with:
+          image-ref: watchtower:${{ github.sha }}
+          exit-code: 0
+          severity: CRITICAL,HIGH,MEDIUM
+          format: sarif
+          output: trivy-results.sarif
+
+      - name: Upload Trivy report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trivy-report
+          path: trivy-results.sarif
+          retention-days: 30
+
+  ci-success:
+    name: CI Successful
+    runs-on: ubuntu-latest
+    needs:
+      - fmt
+      - clippy
+      - build
+      - test-unit
+      - test-integration
+      - coverage
+      - security-audit
+      - cargo-deny
+      - secret-detection
+      - sast
+      - docker-build
+      - docker-scan
+
+    if: always()
+
+    steps:
+      - name: Check status
+        run: |
+          if [[ "${{ needs.fmt.result }}" != "success" ]] || \
+             [[ "${{ needs.clippy.result }}" != "success" ]] || \
+             [[ "${{ needs.build.result }}" != "success" ]] || \
+             [[ "${{ needs.test-unit.result }}" != "success" ]] || \
+             [[ "${{ needs.test-integration.result }}" != "success" ]] || \
+             [[ "${{ needs.security-audit.result }}" != "success" ]] || \
+             [[ "${{ needs.cargo-deny.result }}" != "success" ]] || \
+             [[ "${{ needs.secret-detection.result }}" != "success" ]] || \
+             [[ "${{ needs.sast.result }}" != "success" ]] || \
+             [[ "${{ needs.docker-build.result }}" != "success" ]] || \
+             [[ "${{ needs.docker-scan.result }}" != "success" ]]; then
+            echo "X One or more jobs failed"
+            exit 1
+          fi
+          echo "All jobs passed"
