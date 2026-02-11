@@ -1,20 +1,9 @@
-mod config;
-mod controllers;
-
-use axum::Router;
-use axum::routing::get;
 use std::net::SocketAddr;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-mod middlewares;
-mod models;
-mod schema;
-mod static_data;
-mod templates;
-mod utils;
 
-use crate::controllers::ui::views::get_index;
-use tower_http::trace::TraceLayer;
+
+use watch_tower::app;
 
 #[tokio::main]
 async fn main() {
@@ -34,9 +23,3 @@ async fn main() {
         .expect("failed to start the server");
 }
 
-fn app() -> Router {
-    Router::new()
-        .route("/", get(get_index))
-        // middleware
-        .layer(TraceLayer::new_for_http())
-}
