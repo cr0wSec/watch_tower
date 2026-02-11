@@ -1,8 +1,7 @@
-use crate::lib::run;
 
 mod config;
 mod controllers;
-mod lib;
+use watch_tower::run;
 mod middlewares;
 mod models;
 mod schema;

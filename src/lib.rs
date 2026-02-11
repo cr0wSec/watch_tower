@@ -1,5 +1,4 @@
-pub async fn run() {
-}
+pub async fn run() {}
 
 #[cfg(test)]
 mod tests {
