@@ -23,5 +23,4 @@ mod test {
         let html = result.unwrap().0;
         assert!(html.contains("Watch Tower"));
     }
-
 }

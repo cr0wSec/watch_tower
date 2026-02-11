@@ -8,8 +8,8 @@ pub mod templates;
 pub mod utils;
 
 use axum::{Router, routing::get};
-use tower_http::trace::TraceLayer;
 use controllers::ui::views::get_index;
+use tower_http::trace::TraceLayer;
 
 pub fn app() -> Router {
     Router::new()

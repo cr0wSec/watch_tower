@@ -2,7 +2,6 @@ use std::net::SocketAddr;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
-
 use watch_tower::app;
 
 #[tokio::main]
@@ -22,4 +21,3 @@ async fn main() {
         .await
         .expect("failed to start the server");
 }
-
