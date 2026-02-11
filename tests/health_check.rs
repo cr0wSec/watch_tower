@@ -2,5 +2,4 @@
 #[test]
 fn placeholder() {
     // TODO: real integration tests
-    assert!(true);
 }

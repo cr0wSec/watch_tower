@@ -7,6 +7,7 @@ pub async fn run() {
 mod tests {
     #[test]
     fn it_works() {
-        assert!(true);
+        let result = 2 + 2;
+        assert_ne!(result, 2);
     }
 }
