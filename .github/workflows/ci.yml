@@ -283,8 +283,6 @@ jobs:
       - cargo-deny
       - secret-detection
       - sast
-      - docker-build
-      - docker-scan
 
     if: always()
 
