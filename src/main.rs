@@ -1,8 +1,8 @@
 mod config;
 mod controllers;
 
-use axum::routing::get;
 use axum::Router;
+use axum::routing::get;
 use std::net::SocketAddr;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
