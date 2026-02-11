@@ -1,5 +1,8 @@
+use crate::libs::run;
+
 mod config;
 mod controllers;
+mod libs;
 mod middlewares;
 mod models;
 mod schema;
@@ -8,4 +11,6 @@ mod templates;
 mod utils;
 
 #[tokio::main]
-async fn main() {}
+async fn main() {
+    run().await;
+}
