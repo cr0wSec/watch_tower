@@ -1,10 +1,18 @@
-pub async fn run() {}
+pub mod config;
+pub mod controllers;
+pub mod middlewares;
+pub mod models;
+pub mod schema;
+pub mod static_data;
+pub mod templates;
+pub mod utils;
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_ne!(result, 2);
-    }
+use axum::{Router, routing::get};
+use controllers::ui::views::get_index;
+use tower_http::trace::TraceLayer;
+
+pub fn app() -> Router {
+    Router::new()
+        .route("/", get(get_index))
+        .layer(TraceLayer::new_for_http())
 }
