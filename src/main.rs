@@ -1,14 +1,11 @@
-mod templates;
-mod models;
+mod config;
 mod controllers;
 mod middlewares;
-mod static_data;
-mod utils;
+mod models;
 mod schema;
-mod config;
-
+mod static_data;
+mod templates;
+mod utils;
 
 #[tokio::main]
-async fn main() {
-
-}
+async fn main() {}
