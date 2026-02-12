@@ -38,5 +38,4 @@ mod tests {
         bad_form.password = "".to_string();
         assert!(bad_form.validate().is_err());
     }
-
 }

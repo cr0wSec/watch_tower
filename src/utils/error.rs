@@ -2,7 +2,6 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use thiserror::Error;
 use tracing::error;
-use validator::ValidationError;
 
 #[derive(Error, Debug)]
 pub enum AppError {
@@ -41,7 +40,7 @@ impl IntoResponse for AppError {
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "An internal error occurred. Please try again later.".to_string(),
                 )
-            },
+            }
             AppError::Validation(msg) => (StatusCode::BAD_REQUEST, msg.clone()),
         };
         (status, message).into_response()

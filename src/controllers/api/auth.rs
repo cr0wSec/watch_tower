@@ -1,21 +1,19 @@
-use askama::Template;
-use axum::Form;
-use axum::response::Html;
-use validator::Validate;
 use crate::models::forms::login_form::LoginForm;
 use crate::models::forms::register_form::RegisterForm;
 use crate::templates::{LoginTemplate, RegisterTemplate};
 use crate::utils::error::AppError;
+use askama::Template;
+use axum::Form;
+use axum::response::Html;
+use validator::Validate;
 
 pub async fn get_login() -> Result<Html<String>, AppError> {
-    Ok(Html(LoginTemplate {error: None}.render()?))
+    Ok(Html(LoginTemplate { error: None }.render()?))
 }
-
 
 pub async fn get_register() -> Result<Html<String>, AppError> {
-    Ok(Html(RegisterTemplate {error: None}.render()?))
+    Ok(Html(RegisterTemplate { error: None }.render()?))
 }
-
 
 pub async fn post_login(Form(form): Form<LoginForm>) -> Result<Html<String>, AppError> {
     if let Err(errors) = form.validate() {
@@ -38,7 +36,6 @@ pub async fn post_login(Form(form): Form<LoginForm>) -> Result<Html<String>, App
     };
     Ok(Html(template.render()?))
 }
-
 
 pub async fn post_register(Form(form): Form<RegisterForm>) -> Result<Html<String>, AppError> {
     if let Err(errors) = form.validate() {

@@ -1,10 +1,13 @@
-
 use serde::Deserialize;
 use validator::Validate;
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct RegisterForm {
-    #[validate(length(min = 3, max = 32, message = "Username must be between 3 and 32 characters"))]
+    #[validate(length(
+        min = 3,
+        max = 32,
+        message = "Username must be between 3 and 32 characters"
+    ))]
     pub username: String,
 
     #[validate(email(message = "Invalid email address"))]
@@ -13,7 +16,10 @@ pub struct RegisterForm {
     #[validate(length(min = 8, message = "Password must be at least 8 characters"))]
     pub password: String,
 
-    #[validate(length(min = 8, message = "Password confirmation must be at least 8 characters"))]
+    #[validate(length(
+        min = 8,
+        message = "Password confirmation must be at least 8 characters"
+    ))]
     pub password_confirm: String,
 }
 
@@ -85,7 +91,4 @@ mod tests {
         bad_form.password = "".to_string();
         assert!(bad_form.validate_passwords_match().is_err());
     }
-
-
-
 }
