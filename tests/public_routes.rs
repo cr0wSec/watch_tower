@@ -38,7 +38,7 @@ mod test {
 
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
-    
+
     #[tokio::test]
     async fn login_returns_200() {
         let response = public_routes()
@@ -62,7 +62,6 @@ mod test {
             .expect("missing content-type header");
         assert!(content_type.to_str().unwrap().contains("text/html"));
     }
-
 
     #[tokio::test]
     async fn register_returns_200() {

@@ -7,14 +7,14 @@ pub mod static_data;
 pub mod templates;
 pub mod utils;
 
-use axum::{Router, routing::get};
-use axum::routing::post;
-use deadpool_diesel::postgres::Pool;
-use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-use controllers::ui::views::get_index;
-use tower_http::trace::TraceLayer;
 use crate::controllers::api::auth::{post_login, post_register};
 use crate::controllers::ui::views::{get_login, get_register};
+use axum::routing::post;
+use axum::{Router, routing::get};
+use controllers::ui::views::get_index;
+use deadpool_diesel::postgres::Pool;
+use diesel_migrations::{EmbeddedMigrations, MigrationHarness, embed_migrations};
+use tower_http::trace::TraceLayer;
 
 pub type DbPool = Pool;
 
@@ -51,7 +51,6 @@ pub fn auth_routes(pool: DbPool) -> Router {
 }
 
 pub fn app(pool: DbPool) -> Router {
-
     public_routes()
         .nest("/api", auth_routes(pool))
         .layer(TraceLayer::new_for_http())

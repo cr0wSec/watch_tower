@@ -4,7 +4,6 @@ use tracing_subscriber::util::SubscriberInitExt;
 
 use watch_tower::{app, create_pool, run_migrations};
 
-
 #[tokio::main]
 async fn main() {
     tracing_subscriber::registry()
@@ -19,7 +18,6 @@ async fn main() {
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL is not set in .env file");
     let pool = create_pool(&db_url);
     run_migrations(&pool).await;
-
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
     tracing::debug!("listening on {}", addr);
